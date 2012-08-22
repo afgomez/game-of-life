@@ -8,9 +8,16 @@
     <script type="text/javascript" src="javascripts/game.js"></script>
   </head>
   <body>
-    <canvas id="life" width="800" height="600"></canvas>
+    <canvas id="life" width="1600" height="1000"></canvas>
 
 
-    <script type="text/javascript"></script>
+    <script type="text/javascript">
+
+      game = new GameOfLife('life');
+      setInterval(function() {
+        game.next();
+      }, 200);
+
+    </script>
   </body>
 </html>

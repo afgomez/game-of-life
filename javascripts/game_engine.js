@@ -1,29 +1,31 @@
-function GameOfLife(rows, cols) {
-  this.rows = rows || 60;
-  this.cols = cols || 40;
+function GameEngine(cols, rows) {
+  this.rows = rows || 40;
+  this.cols = cols || 60;
   
   // Construct the current generation array
-  this.current_generation = Array(this.rows);
-  for (var i = 0; i < this.cols; i++) {
-    this.current_generation[i] = Array(this.cols);
-  }
-  
+  this.init();
 }
 
 
-GameOfLife.prototype = {
-  constructor: GameOfLife,
-  
+GameEngine.prototype = {
+  constructor: GameEngine,
+  init: function() {
+    this.current_generation = this.createEmptyArray();
+  },
   randomize: function() {
-    for (var i = 0; i< this.rows; i++) {
-      for(var j = 0; j< this.cols; j++) {
-        this.current_generation[i][j] = Math.round(Math.random());
+    for (var i = 0; i< this.cols; i++) {
+      for(var j = 0; j< this.rows; j++) {
+        this.current_generation[i][j] = Math.random() > 0.8 ? 1 : 0;
       }
     }
   },
 
-  get: function(row, col) {
-    return this.current_generation[row][col];
+  get: function(col, row) {
+    if (arguments.length >= 2) {
+      return this.current_generation[col][row];
+    } else {
+      return this.current_generation;
+    }
   },
 
 
@@ -31,50 +33,58 @@ GameOfLife.prototype = {
    * Here is where the magic happens
    */
   next: function() {
-    var next = this.current_generation.slice(0);
-    var i, j, ni, nj, current, alive_neighbours;
+    var next = this.createEmptyArray();
+    var i, j, current, alive_neighbours;
 
-
-    for (i = 0; i < this.rows; i++) {
-      for (j = 0; j < this.cols; j++) {
-        alive_neighbours = 0;
+    for (i = 0; i < this.cols; i++) {
+      for (j = 0; j < this.rows; j++) {
+        alive_neighbours = this.aliveNeighboursFor(i, j);
         current_alive = this.current_generation[i][j];
-
-        // Count alive neighbours
-        for (ni = (i ? i-1 : i); ni <= (i+1 == this.rows ? i : i+1); ni++) {
-          for (nj = (j ? j-1 : j); nj <= (j+1 == this.cols ? j : j+1); nj++) {
-            
-            if (i == ni && j == nj) { // Skip current cell
-              continue;
-            }
-            if (this.current_generation[ni][nj]) {
-              alive_neighbours++;
-            }
-
-          }
-        }
-
-        switch (alive_neighbours) {
-          case 2:
-            // Una celula muerta necesita tres vecinos vivos para nacer
-            // Una celula viva necesita entre dos y tres vecinos vivos para sobrevivir
-            if (!current_alive) { break; }
-          case 3:
-            next[i][j] = 1;
-            break;
-          default:
-            next[i][j] = 0;
-            break;
+        
+        if (alive_neighbours == 3 || (alive_neighbours == 2 && current_alive)) {
+          next[i][j] = 1;
+        } else {
+          next[i][j] = 0;
         }
         
-        this.current_generation = next;
 
       }
     }
-
+    
+    this.current_generation = next;
     return this;
+  },
+
+  aliveNeighboursFor: function(i, j) {
+    var neighbour, ni, limit_i, nj, limit_j, alive_count = 0;
+  
+    limit_i = (i+1 == this.cols ? i : i+1);
+    limit_j = (j+1 == this.rows ? j : j+1);
+    
+    for (ni = (i === 0 ? i : i-1); ni <= limit_i; ni++) {
+      for (nj = (j === 0 ? i : j-1); nj <= limit_j; nj++) {
+        if (ni == i && nj == j) {
+          continue;
+        }
+        neighbour = this.current_generation[ni][nj];
+        if (neighbour) {
+          alive_count += 1;
+        }
+      }
+    }
+
+    return alive_count;
+  },
+
+  createEmptyArray: function() {
+    var arr = Array(this.cols);
+    for (var i = 0; i < this.cols; i++) {
+      arr[i] = Array(this.rows);
+    }
+    return arr;
   }
   
+
 
 
 };
