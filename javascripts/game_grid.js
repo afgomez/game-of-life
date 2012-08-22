@@ -33,7 +33,8 @@ GameGrid.prototype = {
    */
   renderGrid: function() {
     var ctx = this.canvas.getContext('2d');
-
+    
+    ctx.strokeStyle = '#ccc';
     this.cols = this.cellsIn(this.canvas.width);
     this.rows = this.cellsIn(this.canvas.height);
 
